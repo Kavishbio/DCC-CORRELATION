@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Correlation Predictor (0 to 1)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -24,6 +25,19 @@
     label, input {
       font-size: 16px;
     }
+    button {
+      margin: 10px 5px 0 0;
+      padding: 8px 14px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #3498db;
+      color: white;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
     #prediction {
       font-size: 20px;
       font-weight: bold;
@@ -32,6 +46,20 @@
     }
     canvas {
       margin-top: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background-color: #ffffff;
+    }
+    th, td {
+      border: 1px solid #dcdcdc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #ecf0f1;
     }
     footer {
       margin-top: 40px;
@@ -50,10 +78,27 @@
     <label for="correlation">Input Correlation:</label>
     <input type="number" id="correlation" step="0.01" min="0" max="1" value="0.5" />
     <button onclick="predict()">Predict</button>
+    <button onclick="resetHistory()">Reset</button>
+    <button onclick="downloadPDF()">Download PDF</button>
 
     <div id="prediction"></div>
 
     <canvas id="correlationChart" width="600" height="400"></canvas>
+
+    <h3>📜 Prediction History</h3>
+    <table id="historyTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Input Correlation</th>
+          <th>Predicted Correlation</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Entries will be added here -->
+      </tbody>
+    </table>
 
     <footer>
       Ownership: <strong>Team DNA Code Crackers (DCC)</strong><br>
@@ -63,6 +108,8 @@
   </div>
 
   <script>
+    let entryCount = 0;
+
     function predict() {
       const x = parseFloat(document.getElementById('correlation').value);
       if (x < 0 || x > 1 || isNaN(x)) {
@@ -71,9 +118,12 @@
       }
 
       const y = x + (Math.random() * 0.05 - 0.025); // simulated ML prediction
-      document.getElementById('prediction').innerHTML = `✅ Predicted Correlation: <strong>${y.toFixed(4)}</strong>`;
+      const yRounded = +y.toFixed(4);
 
-      drawChart(x, y);
+      document.getElementById('prediction').innerHTML = `✅ Predicted Correlation: <strong>${yRounded}</strong>`;
+
+      drawChart(x, yRounded);
+      updateHistory(x, yRounded);
     }
 
     function drawChart(userX, userY) {
@@ -120,6 +170,53 @@
       });
     }
 
+    function updateHistory(inputVal, predictedVal) {
+      const table = document.getElementById('historyTable').querySelector('tbody');
+      const now = new Date();
+      const timestamp = now.toLocaleString();
+
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${++entryCount}</td>
+        <td>${inputVal.toFixed(4)}</td>
+        <td>${predictedVal.toFixed(4)}</td>
+        <td>${timestamp}</td>
+      `;
+      // Prepend row to show latest on top
+      table.insertBefore(newRow, table.firstChild);
+    }
+
+    function resetHistory() {
+      const table = document.getElementById('historyTable').querySelector('tbody');
+      table.innerHTML = '';
+      entryCount = 0;
+      document.getElementById('prediction').innerHTML = '';
+      if (window.chart) window.chart.destroy();
+    }
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("Correlation Prediction History", 10, 15);
+
+      const table = document.getElementById('historyTable');
+      const rows = Array.from(table.rows).map(row => Array.from(row.cells).map(cell => cell.innerText));
+
+      // Add table rows to PDF
+      let y = 25;
+      rows.forEach((row, i) => {
+        row.forEach((text, j) => {
+          doc.text(text, 10 + j * 50, y);
+        });
+        y += 10;
+      });
+
+      doc.save("prediction_history.pdf");
+    }
+
+    // Initial prediction on load
     predict();
   </script>
 </body>
