@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Correlation Predictor (0 to 1)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      padding: 30px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label, input {
+      font-size: 16px;
+    }
+    #prediction {
+      font-size: 20px;
+      font-weight: bold;
+      color: #16a085;
+      margin-top: 10px;
+    }
+    canvas {
+      margin-top: 30px;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #7f8c8d;
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔬 Correlation Predictor</h1>
+    <p>Enter a correlation value between <strong>0.00 and 1.00</strong> to simulate a machine learning-based prediction.</p>
+
+    <label for="correlation">Input Correlation:</label>
+    <input type="number" id="correlation" step="0.01" min="0" max="1" value="0.5" />
+    <button onclick="predict()">Predict</button>
+
+    <div id="prediction"></div>
+
+    <canvas id="correlationChart" width="600" height="400"></canvas>
+
+    <footer>
+      Ownership: <strong>Team DNA Code Crackers (DCC)</strong><br>
+      Special thanks to <strong>Dr. K. Sundar</strong> and <strong>Dr. Velmurugan</strong><br>
+      Designed by Kavish S · Final Year B.Tech Biotechnology · 2025 Batch · <strong>KARE</strong>
+    </footer>
+  </div>
+
+  <script>
+    function predict() {
+      const x = parseFloat(document.getElementById('correlation').value);
+      if (x < 0 || x > 1 || isNaN(x)) {
+        alert("Please enter a value between 0 and 1.");
+        return;
+      }
+
+      const y = x + (Math.random() * 0.05 - 0.025); // simulated ML prediction
+      document.getElementById('prediction').innerHTML = `✅ Predicted Correlation: <strong>${y.toFixed(4)}</strong>`;
+
+      drawChart(x, y);
+    }
+
+    function drawChart(userX, userY) {
+      const ctx = document.getElementById('correlationChart').getContext('2d');
+      if (window.chart) window.chart.destroy();
+
+      const trueX = Array.from({length: 40}, () => +(Math.random()).toFixed(3));
+      const predictedY = trueX.map(x => +(x + (Math.random() * 0.05 - 0.025)).toFixed(3));
+
+      window.chart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Predicted vs Actual',
+              data: trueX.map((x, i) => ({x: x, y: predictedY[i]})),
+              backgroundColor: '#2980b9'
+            },
+            {
+              label: 'Your Input Prediction',
+              data: [{x: userX, y: userY}],
+              backgroundColor: '#e67e22',
+              pointStyle: 'rectRot',
+              pointRadius: 8
+            }
+          ]
+        },
+        options: {
+          scales: {
+            x: {
+              type: 'linear',
+              position: 'bottom',
+              min: 0,
+              max: 1,
+              title: { display: true, text: 'True Correlation Value' }
+            },
+            y: {
+              min: 0,
+              max: 1.1,
+              title: { display: true, text: 'Predicted Correlation Value' }
+            }
+          }
+        }
+      });
+    }
+
+    predict();
+  </script>
+</body>
+</html>
