@@ -68,6 +68,38 @@
       text-align: center;
       line-height: 1.5;
     }
+    .collapsible {
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 18px;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+    .active, .collapsible:hover {
+      background-color: #2980b9;
+    }
+    .content {
+      padding: 0 18px;
+      display: none;
+      overflow: hidden;
+      background-color: #f1f1f1;
+    }
+    .leaderboard {
+      margin-top: 20px;
+      font-size: 16px;
+      background-color: #ecf0f1;
+      padding: 15px;
+      border-radius: 6px;
+    }
+    .leaderboard div {
+      padding: 5px 0;
+    }
   </style>
 </head>
 <body>
@@ -100,6 +132,28 @@
       </tbody>
     </table>
 
+    <div class="leaderboard">
+      <h3>🏆 Leaderboard</h3>
+      <div id="highestPrediction">Highest predicted correlation today: <strong>0.0000 by user X</strong></div>
+      <div id="mostPredictions">Most predictions made: <strong>No entries yet</strong></div>
+    </div>
+
+    <!-- Collapsible Section -->
+    <button type="button" class="collapsible">What is correlation?</button>
+    <div class="content">
+      <p>Correlation is a statistical measure that describes the strength and direction of a relationship between two variables. It ranges from -1 (perfect negative correlation) to 1 (perfect positive correlation). A correlation of 0 indicates no linear relationship.</p>
+    </div>
+
+    <button type="button" class="collapsible">How does this simulated prediction work?</button>
+    <div class="content">
+      <p>This simulation predicts a correlation value based on your input and applies a small random variation (±0.025). The prediction is not based on actual machine learning but mimics the behavior of predictive models in a simple way.</p>
+    </div>
+
+    <button type="button" class="collapsible">Link to Tutorial / GitHub Repo</button>
+    <div class="content">
+      <p>Check out this <a href="https://github.com/your-repo" target="_blank">GitHub Repo</a> for more details on the prediction model and the code behind this project.</p>
+    </div>
+
     <footer>
       Ownership: <strong>Team DNA Code Crackers (DCC)</strong><br>
       Special thanks to <strong>Dr. K. Sundar</strong> and <strong>Dr. Velmurugan</strong><br>
@@ -109,6 +163,10 @@
 
   <script>
     let entryCount = 0;
+    let highestPrediction = 0;
+    let highestUser = "user X";
+    let mostPredictions = { name: "No entries yet", count: 0 };
+    let userName = "";
 
     function predict() {
       const x = parseFloat(document.getElementById('correlation').value);
@@ -121,6 +179,20 @@
       const yRounded = +y.toFixed(4);
 
       document.getElementById('prediction').innerHTML = `✅ Predicted Correlation: <strong>${yRounded}</strong>`;
+
+      // Update highest prediction
+      if (yRounded > highestPrediction) {
+        highestPrediction = yRounded;
+        highestUser = userName || "Anonymous User";
+      }
+
+      // Update most predictions
+      if (!userName) userName = prompt("Enter your name (optional for anonymous entries):");
+      if (!mostPredictions[userName]) mostPredictions[userName] = 0;
+      mostPredictions[userName]++;
+
+      document.getElementById('highestPrediction').innerHTML = `Highest predicted correlation today: <strong>${highestPrediction} by ${highestUser}</strong>`;
+      document.getElementById('mostPredictions').innerHTML = `Most predictions made: <strong>${mostPredictions.name} with ${mostPredictions.count} entries</strong>`;
 
       drawChart(x, yRounded);
       updateHistory(x, yRounded);
@@ -215,6 +287,20 @@
 
       doc.save("prediction_history.pdf");
     }
+
+    // Collapsible sections
+    const collapsibles = document.querySelectorAll(".collapsible");
+    collapsibles.forEach(collapsible => {
+      collapsible.addEventListener("click", function() {
+        this.classList.toggle("active");
+        const content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
+    });
 
     // Initial prediction on load
     predict();
